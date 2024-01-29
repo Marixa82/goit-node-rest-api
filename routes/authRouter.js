@@ -13,5 +13,5 @@ authRouter.post("/register", isEmptyBody, userRegisterValidate, authController.r
 authRouter.post("/login", isEmptyBody, userLoginValidate, authController.login);
 authRouter.get("/current", authenticate, authController.getCurrent);
 authRouter.post("/logout", authenticate, authController.logout);
-authRouter.patch("/users", isEmptyBody, authenticate, authController.updateStatusUser);
+authRouter.patch("/", isEmptyBody, authenticate, authController.updateStatusUser);
 export default authRouter;
