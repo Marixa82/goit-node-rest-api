@@ -20,8 +20,16 @@ const contactSchema = new Schema({
     favorite: {
         type: Boolean,
         default: false
-    }
-}, { versionKey: false });
+    },
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: 'user',
+    },
+    versionKey: {
+        type: Boolean,
+        default: false
+    },
+});
 contactSchema.post("save", handleSaveError);
 contactSchema.pre("findOneAndUpdate", runValidatorAtUpdate);
 contactSchema.post("findOneAndUpdate", handleSaveError);
