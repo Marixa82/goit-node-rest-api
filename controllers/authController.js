@@ -3,9 +3,12 @@ import { HttpError, ctrlWrapper } from '../helpers/index.js';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from 'gravatar';
+import fs from 'fs/promises';
+import path from 'path';
 
 
 const { JWT_SECRET } = process.env;
+const avatarPath = path.resolve("public", "avatars");
 
 const register = async (req, res) => {
     const { email, password } = req.body;
@@ -14,9 +17,17 @@ const register = async (req, res) => {
         throw HttpError(409, `${email} is already use`)
     }
     const hashPassword = await bcrypt.hash(password, 10);
-    const avatarURL = gravatar.profile_url(email, { s: '100', r: 'x', d: '404' })
-    console.log(avatarURL)
-    const newUser = await User.create({ ...req.body, avatarURL, password: hashPassword });
+
+    let avatarURL = gravatar.profile_url(email, { s: '200', r: 'g', d: 'wavatar' })
+
+    if (req.file) {
+        const { path: oldPath, filename } = req.file;
+        const newPath = path.join(avatarPath, filename);
+        await fs.rename(oldPath, newPath);
+        avatarURL = path.join("avatars", filename);
+    }
+
+    const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL, });
     res.status(201).json({
         email: newUser.email,
         avatarURL: newUser.avatarURL,
