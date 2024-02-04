@@ -2,6 +2,7 @@ import User from "../db/User.js";
 import { HttpError, ctrlWrapper } from '../helpers/index.js';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import gravatar from 'gravatar';
 
 
 const { JWT_SECRET } = process.env;
@@ -13,14 +14,14 @@ const register = async (req, res) => {
         throw HttpError(409, `${email} is already use`)
     }
     const hashPassword = await bcrypt.hash(password, 10);
-
-    const NewUser = await User.create({ ...req.body, password: hashPassword });
+    const avatarURL = gravatar.profile_url(email, { s: '100', r: 'x', d: '404' })
+    console.log(avatarURL)
+    const newUser = await User.create({ ...req.body, avatarURL, password: hashPassword });
     res.status(201).json({
-        user: {
-            // name: NewUser.name,
-            email: NewUser.email,
-            subscription: NewUser.subscription,
-        }
+        email: newUser.email,
+        avatarURL: newUser.avatarURL,
+        subscription: newUser.subscription,
+
 
     })
 }
@@ -78,6 +79,26 @@ const updateStatusUser = async (req, res) => {
         }
     });
 };
+const updateAvatars = async (req, res) => {
+    const { token } = req.user;
+    const { avatarURL } = req.body;
+
+    if (!token || !avatarURL) {
+        return res.status(400).json({ message: 'Token and avatarURL are required' });
+    }
+
+    const updatedUser = await User.findOneAndUpdate({ token }, { avatarURL }, { new: true });
+
+    if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+        NewAvatar: {
+            avatarURL: updatedUser.avatarURL,
+        }
+    });
+}
 
 
 export default {
@@ -86,4 +107,5 @@ export default {
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),
     updateStatusUser: ctrlWrapper(updateStatusUser),
+    updateAvatars: ctrlWrapper(updateAvatars),
 }
