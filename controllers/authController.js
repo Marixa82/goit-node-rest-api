@@ -92,22 +92,30 @@ const updateStatusUser = async (req, res) => {
 };
 const updateAvatars = async (req, res) => {
     const { token } = req.user;
-    const { avatarURL } = req.body;
+    const avatarURL = req.user.avatarURL;
 
-    if (!token || !avatarURL) {
-        return res.status(400).json({ message: 'Token and avatarURL are required' });
+    if (req.file) {
+        const { path: oldPath, filename } = req.file;
+        const newPath = path.join(avatarPath, filename);
+        await fs.rename(oldPath, newPath);
+        avatarURL = path.join("avatars", filename);
     }
 
     const updatedUser = await User.findOneAndUpdate({ token }, { avatarURL }, { new: true });
-
+    console.log(updatedUser)
     if (!updatedUser) {
         return res.status(404).json({ message: 'User not found' });
     }
+    if (req.user.avatarURL && req.file) {
+        const oldAvatarPath = path.join(path.resolve("public"), req.user.avatarURL);
+        await fs.unlink(oldAvatarPath);
+
+    }
 
     res.json({
-        NewAvatar: {
-            avatarURL: updatedUser.avatarURL,
-        }
+
+        avatarURL: updatedUser.avatarURL,
+
     });
 }
 
