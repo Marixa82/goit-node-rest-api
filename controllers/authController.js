@@ -18,7 +18,7 @@ const register = async (req, res) => {
     }
     const hashPassword = await bcrypt.hash(password, 10);
 
-    let avatarURL = gravatar.profile_url(email, { s: '200', r: 'g', d: 'wavatar' })
+    let avatarURL = gravatar.url(email, { s: '200', r: 'g', d: 'wavatar' })
 
     if (req.file) {
         const { path: oldPath, filename } = req.file;
