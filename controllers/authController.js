@@ -92,7 +92,7 @@ const updateStatusUser = async (req, res) => {
 };
 const updateAvatars = async (req, res) => {
     const { token } = req.user;
-    const avatarURL = req.user.avatarURL;
+    let avatarURL = req.user.avatarURL;
 
     if (req.file) {
         const { path: oldPath, filename } = req.file;
@@ -102,7 +102,7 @@ const updateAvatars = async (req, res) => {
     }
 
     const updatedUser = await User.findOneAndUpdate({ token }, { avatarURL }, { new: true });
-    console.log(updatedUser)
+    // console.log(updatedUser)
     if (!updatedUser) {
         return res.status(404).json({ message: 'User not found' });
     }
