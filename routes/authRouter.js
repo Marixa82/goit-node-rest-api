@@ -8,11 +8,11 @@ const userLoginValidate = validateBody(userLoginSchema);
 const userRegisterValidate = validateBody(userRegisterSchema);
 
 
-authRouter.post("/register", upload.single("avatarUrl"), isEmptyBody, userRegisterValidate, resizeAvatar, authController.register);
+authRouter.post("/register", upload.single("avatarURL"), isEmptyBody, userRegisterValidate, resizeAvatar, authController.register);
 
 authRouter.post("/login", isEmptyBody, userLoginValidate, authController.login);
 authRouter.get("/current", authenticate, authController.getCurrent);
 authRouter.post("/logout", authenticate, authController.logout);
 authRouter.patch("/", isEmptyBody, authenticate, authController.updateStatusUser);
-authRouter.patch("/avatars", upload.single("avatarUrl"), resizeAvatar, authenticate, authController.updateAvatars)
+authRouter.patch("/avatars", upload.single("avatarURL"), resizeAvatar, authenticate, authController.updateAvatars)
 export default authRouter;
