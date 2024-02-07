@@ -22,6 +22,8 @@ const userSchema = new Schema({
         default: "starter"
     },
 
+    avatarURL: String,
+
     token: String
 }, { versionKey: false })
 
@@ -32,11 +34,13 @@ userSchema.post("findOneAndUpdate", handleSaveError);
 export const userRegisterSchema = Joi.object({
     email: Joi.string().pattern(emailRegexp).required(),
     password: Joi.string().min(6).required(),
+    subscription: Joi.string(),
 })
 
 export const userLoginSchema = Joi.object({
     email: Joi.string().pattern(emailRegexp).required(),
     password: Joi.string().min(6).required(),
+    subscription: Joi.string(),
 })
 
 const User = model("user", userSchema);

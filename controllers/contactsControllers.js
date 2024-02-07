@@ -3,6 +3,7 @@ import { HttpError, ctrlWrapper } from '../helpers/index.js';
 
 
 
+
 const getAllContacts = async (req, res) => {
     const { _id: owner } = req.user;
     const { page = 1, limit = 20, favorite } = req.query;
@@ -35,9 +36,10 @@ const deleteContact = async (req, res) => {
     })
 };
 
+
 const createContact = async (req, res) => {
-    // console.log(req.user)
     const { _id: owner } = req.user;
+
     const result = await Contact.create({ ...req.body, owner });
     res.status(201).json(result);
 };

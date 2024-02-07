@@ -2,9 +2,13 @@ import User from "../db/User.js";
 import { HttpError, ctrlWrapper } from '../helpers/index.js';
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import gravatar from 'gravatar';
+import fs from 'fs/promises';
+import path from 'path';
 
 
 const { JWT_SECRET } = process.env;
+const avatarPath = path.resolve("public", "avatars");
 
 const register = async (req, res) => {
     const { email, password } = req.body;
@@ -14,13 +18,21 @@ const register = async (req, res) => {
     }
     const hashPassword = await bcrypt.hash(password, 10);
 
-    const NewUser = await User.create({ ...req.body, password: hashPassword });
+    let avatarURL = gravatar.url(email, { s: '200', r: 'g', d: 'wavatar' })
+
+    if (req.file) {
+        const { path: oldPath, filename } = req.file;
+        const newPath = path.join(avatarPath, filename);
+        await fs.rename(oldPath, newPath);
+        avatarURL = path.join("avatars", filename);
+    }
+
+    const newUser = await User.create({ ...req.body, password: hashPassword, avatarURL, });
     res.status(201).json({
-        user: {
-            // name: NewUser.name,
-            email: NewUser.email,
-            subscription: NewUser.subscription,
-        }
+        email: newUser.email,
+        avatarURL: newUser.avatarURL,
+        subscription: newUser.subscription,
+
 
     })
 }
@@ -78,6 +90,34 @@ const updateStatusUser = async (req, res) => {
         }
     });
 };
+const updateAvatars = async (req, res) => {
+    const { token } = req.user;
+    let avatarURL = req.user.avatarURL;
+
+    if (req.file) {
+        const { path: oldPath, filename } = req.file;
+        const newPath = path.join(avatarPath, filename);
+        await fs.rename(oldPath, newPath);
+        avatarURL = path.join("avatars", filename);
+    }
+
+    const updatedUser = await User.findOneAndUpdate({ token }, { avatarURL }, { new: true });
+    // console.log(updatedUser)
+    if (!updatedUser) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+    if (req.user.avatarURL && req.file) {
+        const oldAvatarPath = path.join(path.resolve("public"), req.user.avatarURL);
+        await fs.unlink(oldAvatarPath);
+
+    }
+
+    res.json({
+
+        avatarURL: updatedUser.avatarURL,
+
+    });
+}
 
 
 export default {
@@ -86,4 +126,5 @@ export default {
     getCurrent: ctrlWrapper(getCurrent),
     logout: ctrlWrapper(logout),
     updateStatusUser: ctrlWrapper(updateStatusUser),
+    updateAvatars: ctrlWrapper(updateAvatars),
 }
